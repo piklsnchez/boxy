@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Title</title>
+        <style type="text/css">
+            
+        </style>
+        <script type="text/javascript">
+            "use strict"
+            class Chat {
+                constructor(){
+                    //hookup form
+                    document.querySelector(".chatInput > form").addEventListener("submit", Chat.handleSubmit, false);
+                    //hookup server side
+                    new EventSource("/respond").onmessage = Chat.onMessage;
+                }
+                static main(){
+                    new Chat();
+                }
+                static handleSubmit(event){
+                    event.preventDefault();
+                    let chatText = event.target.elements["input"].value;
+                    event.target.elements["input"].value = "";
+                    let ajax = new XMLHttpRequest();
+                    ajax.open("post", "/respond", true);
+                    ajax.setRequestHeader("Content-Type", "text/plain");
+                    ajax.send(chatText);
+                }
+                static onMessage(message){
+                    let element = document.createElement("span");
+                    element.appendChild(document.createTextNode(message.data));
+                    let display = document.querySelector(".chatDisplay");
+                    display.appendChild(element);
+                    display.appendChild(document.createElement("br"));
+                }
+            }
+            window.onload = Chat.main;
+        </script>
+    </head>
+    <body>
+        <div class="chatDisplay"></div>
+        <div class="chatInput">
+            <form>
+                <input type="text" name="input" />
+                <input type="submit" value="Submit" />
+            </form>
+        </div>
+    </body>
+</html>
